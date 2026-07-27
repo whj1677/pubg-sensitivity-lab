@@ -1,0 +1,24 @@
+# Local development artifacts
+node_modules/
+.next/
+.vinext/
+dist/
+out/
+coverage/
+
+# Environment and credentials
+.env
+.env.*
+*.pem
+
+# Editor and operating-system files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Temporary output
+*.log
+*.tmp
+outputs/
+work/
