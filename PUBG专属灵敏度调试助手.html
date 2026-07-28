@@ -1,0 +1,1590 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d10">
+  <title>PUBG SENS LAB｜专属灵敏度调试助手</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #12161b;
+      --panel-2: #171c22;
+      --line: #2a313a;
+      --line-strong: #3a444f;
+      --text: #f6f8fa;
+      --muted: #98a3af;
+      --accent: #f3b33d;
+      --accent-2: #42d3b2;
+      --danger: #ff6b65;
+      --info: #67a8ff;
+      --radius: 18px;
+      --shadow: 0 20px 55px rgba(0, 0, 0, .28);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: var(--bg);
+      font-family: Inter, "Segoe UI", "Microsoft YaHei UI", "Microsoft YaHei", sans-serif;
+    }
+
+    button, input, select { font: inherit; }
+    button { color: inherit; }
+    [hidden] { display: none !important; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 72px;
+      padding: 12px clamp(18px, 4vw, 56px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(11, 13, 16, .94);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      color: #0b0d10;
+      background: var(--accent);
+      border-radius: 11px;
+      font-weight: 950;
+      letter-spacing: -1px;
+      box-shadow: 0 0 0 4px rgba(243,179,61,.12);
+    }
+    .brand strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: .08em;
+    }
+    .brand small { color: var(--muted); }
+    .top-tags { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .tag {
+      padding: 7px 10px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #11151a;
+      font-size: 12px;
+    }
+    .tag.live { color: #081712; border-color: transparent; background: var(--accent-2); font-weight: 800; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: 28px;
+      width: min(1480px, calc(100% - 32px));
+      margin: 28px auto 70px;
+    }
+
+    .side {
+      position: sticky;
+      top: 100px;
+      align-self: start;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(18,22,27,.96);
+      box-shadow: var(--shadow);
+    }
+    .side-label {
+      margin: 2px 8px 12px;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .step-button {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      margin: 4px 0;
+      padding: 11px 10px;
+      color: var(--muted);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+    .step-button:hover { color: var(--text); background: var(--panel-2); }
+    .step-button.active {
+      color: var(--text);
+      border-color: #4a3b1f;
+      background: #221c12;
+    }
+    .step-number {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      font-weight: 800;
+    }
+    .step-button.active .step-number { color: #171107; border-color: var(--accent); background: var(--accent); }
+    .step-check { color: var(--accent-2); font-weight: 900; }
+    .side-note {
+      margin: 18px 4px 2px;
+      padding: 14px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #0d1014;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+    .side-note strong { color: var(--accent-2); }
+
+    main { min-width: 0; }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(28px, 5vw, 58px);
+      min-height: 300px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: #101419;
+      box-shadow: var(--shadow);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      top: -55px;
+      right: -45px;
+      width: 290px;
+      height: 290px;
+      border: 42px solid rgba(243,179,61,.08);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 26px; height: 2px; background: var(--accent); }
+    h1 {
+      max-width: 790px;
+      margin: 0;
+      font-size: clamp(38px, 4.7vw, 64px);
+      line-height: .98;
+      letter-spacing: -.055em;
+    }
+    .hero p {
+      max-width: 760px;
+      margin: 22px 0 0;
+      color: #b7c0ca;
+      font-size: clamp(15px, 2vw, 18px);
+      line-height: 1.75;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .hero-stat {
+      min-width: 145px;
+      padding: 13px 16px;
+      border-left: 3px solid var(--accent);
+      background: #171c22;
+    }
+    .hero-stat b { display: block; font-size: 18px; }
+    .hero-stat span { color: var(--muted); font-size: 12px; }
+
+    .section {
+      margin-top: 22px;
+      padding: clamp(20px, 3vw, 34px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(18,22,27,.97);
+      box-shadow: var(--shadow);
+    }
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .section-kicker {
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    h2 { margin: 6px 0 4px; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.025em; }
+    h3 { margin: 0; font-size: 17px; }
+    .section-desc { margin: 7px 0 0; color: var(--muted); line-height: 1.65; }
+
+    .grid { display: grid; gap: 16px; }
+    .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .subcard {
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #0f1317;
+    }
+    .subcard-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 17px; }
+    .weight-badge {
+      padding: 5px 8px;
+      color: var(--accent);
+      border: 1px solid #5a4320;
+      border-radius: 999px;
+      background: #1f180e;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .field { display: grid; gap: 7px; }
+    .field label {
+      color: #c6ced6;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .field small { color: var(--muted); font-size: 11px; line-height: 1.5; }
+    input, select {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      color: var(--text);
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      outline: none;
+      background: #0b0e12;
+    }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(243,179,61,.11); }
+    input[type="range"] { min-height: 32px; padding: 0; accent-color: var(--accent); }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #0b0e12;
+    }
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 27px;
+      flex: 0 0 auto;
+    }
+    .toggle input { position: absolute; opacity: 0; pointer-events: none; }
+    .toggle span {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #343c45;
+      cursor: pointer;
+      transition: .2s ease;
+    }
+    .toggle span::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      background: white;
+      transition: .2s ease;
+    }
+    .toggle input:checked + span { background: var(--accent); }
+    .toggle input:checked + span::after { transform: translateX(21px); background: #171107; }
+
+    .button-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
+    .btn {
+      min-height: 44px;
+      padding: 10px 17px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: #171c22;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn:hover { border-color: #5a6673; background: #1d232a; }
+    .btn.primary { color: #171107; border-color: var(--accent); background: var(--accent); }
+    .btn.primary:hover { background: #ffc657; }
+    .btn.secondary { color: #071812; border-color: var(--accent-2); background: var(--accent-2); }
+    .btn.ghost { background: transparent; }
+    .btn.danger { color: #ffd1ce; border-color: #663b3a; background: #251516; }
+
+    .loadout-summary {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid #32433f;
+      border-radius: 14px;
+      background: #0e1716;
+    }
+    .loadout-score { text-align: right; }
+    .loadout-score strong { display: block; color: var(--accent-2); font-size: 28px; }
+    .loadout-score span { color: var(--muted); font-size: 11px; }
+
+    .test-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+    .test-card {
+      position: relative;
+      overflow: hidden;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #0e1216;
+    }
+    .test-index {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      margin-bottom: 28px;
+      color: var(--accent);
+      border: 1px solid #5a4320;
+      border-radius: 11px;
+      background: #1d170e;
+      font-weight: 950;
+    }
+    .test-card p { min-height: 66px; color: var(--muted); line-height: 1.6; font-size: 13px; }
+    .test-meta { display: flex; justify-content: space-between; margin: 18px 0; color: var(--muted); font-size: 11px; }
+    .test-status { color: var(--accent); font-weight: 800; }
+    .test-status.done { color: var(--accent-2); }
+
+    .arena-shell {
+      margin-top: 20px;
+      border: 1px solid var(--line-strong);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #080a0d;
+    }
+    .arena-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      min-height: 54px;
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--line);
+      background: #11151a;
+    }
+    .arena-toolbar strong { font-size: 13px; }
+    .arena-hud { display: flex; gap: 16px; color: var(--muted); font-size: 12px; }
+    .arena-hud b { color: var(--text); font-size: 15px; }
+    .arena {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 8.5;
+      min-height: 360px;
+      overflow: hidden;
+      cursor: none;
+      user-select: none;
+      background: #090c10;
+      touch-action: none;
+    }
+    .arena::before, .arena::after {
+      content: "";
+      position: absolute;
+      pointer-events: none;
+      background: rgba(255,255,255,.045);
+    }
+    .arena::before { left: 50%; top: 0; width: 1px; height: 100%; }
+    .arena::after { top: 50%; left: 0; height: 1px; width: 100%; }
+    .target {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin: -22px 0 0 -22px;
+      border: 2px solid #fff1c7;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 9px rgba(243,179,61,.09), 0 8px 25px rgba(0,0,0,.35);
+      pointer-events: none;
+    }
+    .target::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #171107; }
+    .crosshair {
+      position: absolute;
+      z-index: 5;
+      width: 34px;
+      height: 34px;
+      margin: -17px 0 0 -17px;
+      pointer-events: none;
+      filter: drop-shadow(0 1px 2px #000);
+    }
+    .crosshair::before, .crosshair::after {
+      content: "";
+      position: absolute;
+      background: #f8fbff;
+      box-shadow: 0 0 0 1px rgba(0,0,0,.6);
+    }
+    .crosshair::before { left: 16px; top: 2px; width: 2px; height: 30px; }
+    .crosshair::after { top: 16px; left: 2px; height: 2px; width: 30px; }
+    .crosshair-dot {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      width: 6px;
+      height: 6px;
+      z-index: 2;
+      border-radius: 50%;
+      background: var(--danger);
+    }
+    .arena-cover {
+      position: absolute;
+      z-index: 10;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 25px;
+      background: rgba(7,9,12,.84);
+      cursor: default;
+    }
+    .start-orb {
+      display: grid;
+      place-items: center;
+      width: 170px;
+      height: 170px;
+      padding: 22px;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      background: #17130b;
+      text-align: center;
+      box-shadow: 0 0 0 16px rgba(243,179,61,.06);
+    }
+    .start-orb b { display: block; margin-bottom: 7px; font-size: 18px; }
+    .start-orb span { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .countdown {
+      font-size: clamp(64px, 14vw, 150px);
+      font-weight: 950;
+      letter-spacing: -.07em;
+    }
+    .finish-card {
+      width: min(480px, 92%);
+      padding: 24px;
+      border: 1px solid var(--line-strong);
+      border-radius: 17px;
+      background: #12171c;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .finish-card strong { display: block; color: var(--accent-2); font-size: 26px; }
+    .finish-card p { color: var(--muted); line-height: 1.6; }
+    .sweep-start, .sweep-finish {
+      position: absolute;
+      z-index: 2;
+      top: 12%;
+      bottom: 12%;
+      display: grid;
+      place-items: center;
+      width: 86px;
+      border: 2px dashed var(--line-strong);
+      border-radius: 14px;
+      color: var(--muted);
+      background: rgba(255,255,255,.025);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+    }
+    .sweep-start { left: 5%; }
+    .sweep-finish { right: 5%; }
+    .sweep-start.active { color: #171107; border-style: solid; border-color: var(--accent); background: var(--accent); }
+    .sweep-finish.active { color: #071812; border-style: solid; border-color: var(--accent-2); background: var(--accent-2); }
+    .compass {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 180px;
+      height: 180px;
+      margin: -90px 0 0 -90px;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .compass::before {
+      content: "N";
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: var(--accent);
+      font-weight: 900;
+    }
+    .compass-line {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 3px;
+      height: 74px;
+      transform-origin: 50% 0;
+      background: var(--accent);
+    }
+
+    .results-banner {
+      display: grid;
+      grid-template-columns: minmax(0,1fr) auto;
+      gap: 24px;
+      align-items: center;
+      padding: 24px;
+      border: 1px solid #574420;
+      border-radius: 17px;
+      background: #1a160f;
+    }
+    .results-banner .big {
+      color: var(--accent);
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 950;
+      line-height: 1;
+    }
+    .confidence { text-align: right; }
+    .confidence strong { display: block; color: var(--accent-2); font-size: 30px; }
+    .confidence span { color: var(--muted); font-size: 12px; }
+
+    .result-table {
+      width: 100%;
+      margin-top: 18px;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    .result-table th, .result-table td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      font-size: 13px;
+    }
+    .result-table th { color: var(--muted); background: #0d1115; font-size: 11px; letter-spacing: .08em; }
+    .result-table tr:last-child td { border-bottom: 0; }
+    .result-value { color: var(--accent); font-size: 18px; font-weight: 950; }
+    .delta.up { color: var(--accent-2); }
+    .delta.down { color: var(--danger); }
+    .reason { color: var(--muted); }
+
+    .diagnosis-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 14px; margin-top: 18px; }
+    .diagnosis {
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #0d1115;
+    }
+    .diagnosis b { display: block; margin-bottom: 8px; }
+    .diagnosis p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .diagnosis.good { border-color: #2c4b43; }
+    .diagnosis.warn { border-color: #5a4320; }
+    .diagnosis.alert { border-color: #613b3a; }
+
+    .ab-panel {
+      margin-top: 18px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      background: #0c1014;
+    }
+    .ab-options { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-top: 14px; }
+    .ab-option { padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: #12171c; }
+    .ab-option b { color: var(--accent); font-size: 20px; }
+
+    .notice {
+      margin-top: 16px;
+      padding: 14px 16px;
+      color: #c6ced6;
+      border-left: 3px solid var(--info);
+      background: #0f1721;
+      font-size: 12px;
+      line-height: 1.65;
+    }
+    .notice.warning { border-left-color: var(--accent); background: #1a160f; }
+
+    .toast {
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      bottom: 28px;
+      transform: translate(-50%, 20px);
+      padding: 11px 16px;
+      color: #071812;
+      border-radius: 10px;
+      background: var(--accent-2);
+      box-shadow: var(--shadow);
+      font-weight: 800;
+      opacity: 0;
+      pointer-events: none;
+      transition: .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    .footer {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto 35px;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 1050px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: static; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; }
+      .side-label, .side-note { display: none; }
+      .step-button { grid-template-columns: 30px 1fr; }
+      .step-check { display: none; }
+      .grid.four { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .test-grid { grid-template-columns: 1fr; }
+      .test-card p { min-height: 0; }
+    }
+    @media (max-width: 720px) {
+      .top-tags { display: none; }
+      .layout { width: min(100% - 20px, 1480px); margin-top: 10px; gap: 12px; }
+      .side { top: 76px; z-index: 20; padding: 8px; grid-template-columns: repeat(4,1fr); border-radius: 13px; }
+      .step-button { display: grid; place-items: center; padding: 8px; }
+      .step-button span:nth-child(2) { display: none; }
+      .hero { min-height: 0; padding: 28px 22px; }
+      h1 { font-size: 43px; }
+      .grid.two, .grid.three, .grid.four, .diagnosis-grid, .ab-options { grid-template-columns: 1fr; }
+      .section { padding: 20px 15px; }
+      .section-head { display: block; }
+      .results-banner { grid-template-columns: 1fr; }
+      .confidence { text-align: left; }
+      .arena { min-height: 400px; aspect-ratio: auto; }
+      .arena-toolbar { align-items: flex-start; }
+      .arena-hud { gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+      .result-table { display: block; overflow-x: auto; white-space: nowrap; }
+      .loadout-summary { grid-template-columns: 1fr; }
+      .loadout-score { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">SL</div>
+      <div>
+        <strong>PUBG SENS LAB</strong>
+        <small>专属灵敏度调试助手</small>
+      </div>
+    </div>
+    <div class="top-tags">
+      <span class="tag live">本地安全运行</span>
+      <span class="tag">Steam 键鼠</span>
+      <span class="tag">适配 PUBG 42.x 设置结构</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="side" aria-label="调试步骤">
+      <div class="side-label">Calibration flow</div>
+      <button class="step-button active" data-step="profile"><span class="step-number">1</span><span>鼠标档案</span><span class="step-check">●</span></button>
+      <button class="step-button" data-step="loadout"><span class="step-number">2</span><span>主战配装</span><span class="step-check">●</span></button>
+      <button class="step-button" data-step="tests"><span class="step-number">3</span><span>三项测试</span><span class="step-check">●</span></button>
+      <button class="step-button" data-step="results"><span class="step-number">4</span><span>方案与微调</span><span class="step-check">●</span></button>
+      <div class="side-note"><strong>公平竞技边界</strong><br>只测量、分析和生成设置值；不注入游戏、不发送鼠标输入、不提供宏或自动控枪。</div>
+    </aside>
+
+    <main>
+      <section class="hero">
+        <div class="eyebrow">Recoil-first calibration</div>
+        <h1>不是照抄职业选手，<br>是找出你压得住的灵敏度。</h1>
+        <p>用鼠标习惯、追踪与定位表现、垂直补偿能力，以及你最常用的武器配件，生成 PUBG 设置页可直接输入的候选值，再通过训练场 A/B 校准逐步收敛。</p>
+        <div class="hero-stats">
+          <div class="hero-stat"><b>3 × 10 秒</b><span>鼠标内嵌测试</span></div>
+          <div class="hero-stat"><b>双配装权重</b><span>兼顾主枪与备用枪</span></div>
+          <div class="hero-stat"><b>单变量 A/B</b><span>避免整套参数一起乱改</span></div>
+        </div>
+      </section>
+
+      <section class="section step-panel" id="panel-profile" data-panel="profile">
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Step 01 / Mouse profile</div>
+            <h2>建立你的鼠标控制档案</h2>
+            <p class="section-desc">DPI、鼠标垫空间和发力方式决定合理搜索区间。先记录当前值，生成器只做小步、有依据的调整。</p>
+          </div>
+          <span class="weight-badge">数据仅保存在本机浏览器</span>
+        </div>
+
+        <div class="grid four">
+          <div class="field"><label for="dpi">鼠标 DPI</label><input id="dpi" type="number" min="100" max="6400" step="50" value="800"><small>请填写鼠标驱动中的真实档位</small></div>
+          <div class="field"><label for="polling">回报率</label><select id="polling"><option>125 Hz</option><option>500 Hz</option><option selected>1000 Hz</option><option>2000 Hz</option><option>4000 Hz</option><option>8000 Hz</option></select><small>用于抖动判断，不改变游戏数值</small></div>
+          <div class="field"><label for="padWidth">鼠标垫可用宽度（cm）</label><input id="padWidth" type="number" min="15" max="100" step="0.5" value="45"><small>只计算实际能挥动的区域</small></div>
+          <div class="field"><label for="fov">FPP Camera FOV</label><input id="fov" type="number" min="80" max="103" step="1" value="103"><small>影响视觉感受，不改变真实 cm/360</small></div>
+        </div>
+        <div class="grid three" style="margin-top:16px">
+          <div class="field"><label for="resolution">游戏分辨率</label><select id="resolution"><option>1920 × 1080</option><option>1728 × 1080</option><option>2560 × 1440</option><option>其他</option></select></div>
+          <div class="field"><label for="aimStyle">主要发力方式</label><select id="aimStyle"><option value="arm">手臂流｜大范围低敏</option><option value="hybrid" selected>混合流｜手臂 + 手腕</option><option value="wrist">手腕流｜小范围高敏</option></select></div>
+          <div class="field"><label for="gripStyle">握法</label><select id="gripStyle"><option>趴握 Palm</option><option selected>抓握 Claw</option><option>指握 Fingertip</option></select></div>
+        </div>
+
+        <div class="subcard" style="margin-top:18px">
+          <div class="subcard-head"><h3>当前 PUBG 设置</h3><span class="weight-badge">作为校准锚点</span></div>
+          <div class="grid four">
+            <div class="field"><label for="currentGeneral">常规灵敏度</label><input id="currentGeneral" type="number" min="1" max="100" value="38"></div>
+            <div class="field"><label for="currentVertical">垂直灵敏度倍率</label><input id="currentVertical" type="number" min=".5" max="2" step=".01" value="1.00"></div>
+            <div class="field"><label for="currentAim">瞄准灵敏度</label><input id="currentAim" type="number" min="1" max="100" value="37"></div>
+            <div class="field"><label for="currentAds">ADS 灵敏度</label><input id="currentAds" type="number" min="1" max="100" value="37"></div>
+          </div>
+          <div class="toggle-row" style="margin-top:16px">
+            <div><b>全部倍镜统一灵敏度</b><div style="color:var(--muted);font-size:11px;margin-top:4px">关闭后分别输出 2x～15x，适合精细调试压枪</div></div>
+            <label class="toggle"><input id="universalScopes" type="checkbox"><span></span></label>
+          </div>
+          <div class="grid four" id="scopeInputs" style="margin-top:16px">
+            <div class="field"><label for="scope2">2x</label><input id="scope2" type="number" min="1" max="100" value="36"></div>
+            <div class="field"><label for="scope3">3x</label><input id="scope3" type="number" min="1" max="100" value="36"></div>
+            <div class="field"><label for="scope4">4x</label><input id="scope4" type="number" min="1" max="100" value="36"></div>
+            <div class="field"><label for="scope6">6x</label><input id="scope6" type="number" min="1" max="100" value="36"></div>
+            <div class="field"><label for="scope8">8x</label><input id="scope8" type="number" min="1" max="100" value="36"></div>
+            <div class="field"><label for="scope15">15x</label><input id="scope15" type="number" min="1" max="100" value="36"></div>
+          </div>
+          <div class="field" id="scopingField" style="margin-top:16px" hidden><label for="currentScoping">开镜模式灵敏度（Scoping）</label><input id="currentScoping" type="number" min="1" max="100" value="36"></div>
+        </div>
+        <div class="button-row"><button class="btn primary next-step" data-next="loadout">下一步：选择主战配装</button></div>
+      </section>
+
+      <section class="section step-panel" id="panel-loadout" data-panel="loadout" hidden>
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Step 02 / Loadout intelligence</div>
+            <h2>把配件当作测试上下文，而不是另一套灵敏度</h2>
+            <p class="section-desc">PUBG 不支持按武器保存灵敏度。这里用两套常用配装做加权，寻找换枪后依然稳定的核心参数。</p>
+          </div>
+        </div>
+
+        <div class="grid two">
+          <div class="subcard">
+            <div class="subcard-head"><h3>主战配装</h3><span class="weight-badge">权重 70%</span></div>
+            <div class="grid two">
+              <div class="field"><label for="weaponA">武器</label><select id="weaponA" class="loadout-field"><option selected>M416</option><option>AUG</option><option>SCAR-L</option><option>QBZ</option><option>G36C</option><option>ACE32</option><option>Beryl M762</option><option>AKM</option></select></div>
+              <div class="field"><label for="scopeA">常用瞄具</label><select id="scopeA" class="loadout-field"><option>红点 / 全息</option><option>2x</option><option selected>3x</option><option>4x</option><option>6x 缩放压枪</option><option>Hybrid 1x/4x</option></select></div>
+              <div class="field"><label for="muzzleA">枪口</label><select id="muzzleA" class="loadout-field"><option selected>枪口制退器</option><option>补偿器</option><option>消焰器</option><option>消音器</option><option>无枪口</option></select></div>
+              <div class="field"><label for="gripA">握把</label><select id="gripA" class="loadout-field"><option selected>倾斜握把（2026）</option><option>垂直握把</option><option>半截式握把</option><option>拇指握把</option><option>轻型握把</option><option>无握把</option></select></div>
+              <div class="field"><label for="stockA">枪托</label><select id="stockA" class="loadout-field"><option selected>重型枪托</option><option>战术枪托</option><option>无枪托</option></select></div>
+              <div class="field"><label for="stanceA">主要姿态</label><select id="stanceA" class="loadout-field"><option>站姿</option><option selected>蹲姿</option><option>卧姿</option></select></div>
+            </div>
+          </div>
+
+          <div class="subcard">
+            <div class="subcard-head"><h3>次要配装</h3><span class="weight-badge">权重 30%</span></div>
+            <div class="grid two">
+              <div class="field"><label for="weaponB">武器</label><select id="weaponB" class="loadout-field"><option>M416</option><option>AUG</option><option>SCAR-L</option><option>QBZ</option><option>G36C</option><option>ACE32</option><option selected>Beryl M762</option><option>AKM</option></select></div>
+              <div class="field"><label for="scopeB">常用瞄具</label><select id="scopeB" class="loadout-field"><option selected>红点 / 全息</option><option>2x</option><option>3x</option><option>4x</option><option>6x 缩放压枪</option><option>Hybrid 1x/4x</option></select></div>
+              <div class="field"><label for="muzzleB">枪口</label><select id="muzzleB" class="loadout-field"><option>枪口制退器</option><option selected>补偿器</option><option>消焰器</option><option>消音器</option><option>无枪口</option></select></div>
+              <div class="field"><label for="gripB">握把</label><select id="gripB" class="loadout-field"><option>倾斜握把（2026）</option><option selected>垂直握把</option><option>半截式握把</option><option>拇指握把</option><option>轻型握把</option><option>无握把</option></select></div>
+              <div class="field"><label for="stockB">枪托</label><select id="stockB" class="loadout-field"><option>重型枪托</option><option>战术枪托</option><option selected>无枪托</option></select></div>
+              <div class="field"><label for="stanceB">主要姿态</label><select id="stanceB" class="loadout-field"><option>站姿</option><option selected>蹲姿</option><option>卧姿</option></select></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid two" style="margin-top:16px">
+          <div class="field"><label for="distance">主要压枪距离：<b id="distanceValue">40</b> 米</label><input id="distance" type="range" min="10" max="120" step="5" value="40"></div>
+          <div class="field"><label for="sprayIssue">当前最明显的问题</label><select id="sprayIssue"><option value="unstable" selected>每次弹道都不稳定</option><option value="under">持续压不住、后段上飘</option><option value="over">经常下压过头</option><option value="horizontal">左右摆动和修正过多</option><option value="first">前 10 发不稳</option><option value="fatigue">压到后半段手臂疲劳</option></select></div>
+        </div>
+
+        <div class="loadout-summary">
+          <div><b id="loadoutTitle">稳健型配装基线</b><p id="loadoutText" class="section-desc">正在根据主次配装计算纵向、横向和镜头抖动负担。</p></div>
+          <div class="loadout-score"><strong id="loadoutDifficulty">1.00</strong><span>综合压枪难度系数</span></div>
+        </div>
+        <div class="notice warning">配件数据用于相对难度与建议，不会伪造“换配件自动改游戏灵敏度”。当前版本已纳入 2026 新增的倾斜握把，并移除已停止世界刷新的直角前握把。</div>
+        <div class="button-row"><button class="btn ghost next-step" data-next="profile">返回</button><button class="btn primary next-step" data-next="tests">下一步：开始测试</button></div>
+      </section>
+
+      <section class="section step-panel" id="panel-tests" data-panel="tests" hidden>
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Step 03 / Embedded tests</div>
+            <h2>三项测试，鼠标触碰即开始</h2>
+            <p class="section-desc">无需点击目标。建议每项至少完成一次；正式校准可每项重复三轮，程序会保存最近成绩。</p>
+          </div>
+          <button class="btn ghost" id="resetTests">重置测试</button>
+        </div>
+
+        <div class="test-grid">
+          <article class="test-card">
+            <div class="test-index">01</div><h3>追踪与垂直补偿</h3>
+            <p>前半段跟随移动目标，后半段加入模拟上跳；统计跟随时间、中心误差、横向抖动和补偿偏差。</p>
+            <div class="test-meta"><span>10 秒</span><span class="test-status" id="status-tracking">未完成</span></div>
+            <button class="btn primary start-test" data-test="tracking">进入测试区</button>
+          </article>
+          <article class="test-card">
+            <div class="test-index">02</div><h3>快速定位</h3>
+            <p>准星触碰随机目标并短暂停留即命中。记录命中数、中位反应时间、过冲和二次修正。</p>
+            <div class="test-meta"><span>10 秒</span><span class="test-status" id="status-aim">未完成</span></div>
+            <button class="btn primary start-test" data-test="aim">进入测试区</button>
+          </article>
+          <article class="test-card">
+            <div class="test-index">03</div><h3>360° 舒适挥动</h3>
+            <p>从起点扫到终点，估计完整挥动距离与速度；可录入 PUBG 训练场实测厘米数覆盖网页估算。</p>
+            <div class="test-meta"><span>单次挥动</span><span class="test-status" id="status-turn">未完成</span></div>
+            <button class="btn primary start-test" data-test="turn">进入测试区</button>
+          </article>
+        </div>
+
+        <div class="arena-shell" id="arenaShell" hidden>
+          <div class="arena-toolbar">
+            <strong id="arenaTitle">测试区</strong>
+            <div class="arena-hud">
+              <span>剩余 <b id="hudTime">10.0</b>s</span>
+              <span>得分 <b id="hudScore">0</b></span>
+              <span id="hudExtraWrap">误差 <b id="hudExtra">--</b></span>
+            </div>
+          </div>
+          <div class="arena" id="arena">
+            <div class="target" id="target" hidden></div>
+            <div class="crosshair" id="crosshair" hidden><span class="crosshair-dot"></span></div>
+            <div class="sweep-start" id="sweepStart" hidden>START</div>
+            <div class="sweep-finish" id="sweepFinish" hidden>FINISH</div>
+            <div class="compass" id="compass" hidden><div class="compass-line" id="compassLine"></div></div>
+            <div class="arena-cover" id="arenaCover">
+              <div class="start-orb" id="startOrb"><div><b>把鼠标移到这里</b><span>触碰后自动倒计时，无需点击</span></div></div>
+            </div>
+          </div>
+          <div class="subcard" id="turnCalibration" hidden style="border-radius:0;border-width:1px 0 0">
+            <div class="grid two">
+              <div class="field"><label for="actualCm">PUBG 训练场实测 cm/360（可选）</label><input id="actualCm" type="number" min="5" max="150" step=".1" placeholder="例如 42.5"><small>填写后优先使用实测值；网页估算只用于确定初始区间</small></div>
+              <div class="field"><label>训练场测法</label><small>准星对准固定物体，从鼠标起点移动到完成一圈，测量鼠标实际移动厘米数。建议做 3 次取中位数。</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row"><button class="btn ghost next-step" data-next="loadout">返回</button><button class="btn secondary" id="generateResults">生成专属方案</button></div>
+      </section>
+
+      <section class="section step-panel" id="panel-results" data-panel="results" hidden>
+        <div class="section-head">
+          <div>
+            <div class="section-kicker">Step 04 / Recommendation</div>
+            <h2>你的 PUBG 灵敏度候选方案</h2>
+            <p class="section-desc">数值限制为 PUBG 设置页可输入格式。它是训练场验证的起点，不是自动控枪参数。</p>
+          </div>
+          <button class="btn ghost" id="exportJson">导出测试记录</button>
+        </div>
+
+        <div class="results-banner">
+          <div><span class="section-kicker">建议转身距离</span><div class="big"><span id="resultCm">--</span> cm/360</div><p class="section-desc" id="resultHeadline">完成测试后生成。</p></div>
+          <div class="confidence"><strong id="confidenceValue">--%</strong><span>当前建议可信度</span></div>
+        </div>
+
+        <table class="result-table" aria-label="推荐灵敏度">
+          <thead><tr><th>设置项</th><th>当前</th><th>推荐</th><th>变化</th><th>生成依据</th></tr></thead>
+          <tbody id="resultRows"></tbody>
+        </table>
+
+        <div class="diagnosis-grid" id="diagnosisGrid"></div>
+
+        <div class="ab-panel">
+          <h3>训练场下一轮 A/B 测试</h3>
+          <p class="section-desc">两套配置只改变一个参数。固定武器、配件、距离、姿态，各压三组 30 发后选择更稳定的一套。</p>
+          <div class="ab-options">
+            <div class="ab-option"><span class="section-kicker">方案 A｜稳健</span><div><b id="abA">--</b></div><small id="abAText">等待生成</small></div>
+            <div class="ab-option"><span class="section-kicker">方案 B｜对照</span><div><b id="abB">--</b></div><small id="abBText">等待生成</small></div>
+          </div>
+          <div class="grid three" style="margin-top:16px">
+            <button class="btn ab-feedback" data-feedback="under">A/B 都压不住</button>
+            <button class="btn ab-feedback" data-feedback="over">A/B 都下压过头</button>
+            <button class="btn ab-feedback" data-feedback="horizontal">主要是左右摆动</button>
+          </div>
+        </div>
+
+        <div class="notice">高级版后续可增加“墙面弹着截图分析”：上传训练场喷射截图，识别弹着高度、宽度和重心漂移，自动生成下一轮 A/B 参数。仍然只做离线分析，不读取或控制游戏进程。</div>
+        <div class="button-row"><button class="btn ghost next-step" data-next="tests">返回测试</button><button class="btn primary" id="saveProfile">保存本次方案</button></div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">PUBG SENS LAB 是本地调试原型，与 KRAFTON / PUBG 官方无隶属关系。配件能力用于相对难度建模；版本更新后应复核武器与配件平衡数据。</footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+      const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+      const round = (n, d = 0) => Number(n.toFixed(d));
+      const median = (arr) => {
+        if (!arr.length) return 0;
+        const sorted = [...arr].sort((a,b) => a-b);
+        const mid = Math.floor(sorted.length / 2);
+        return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      };
+      const numberValue = (id, fallback) => {
+        const n = Number($(id).value);
+        return Number.isFinite(n) ? n : fallback;
+      };
+
+      const state = {
+        activeStep: "profile",
+        activeTest: null,
+        testPhase: "idle",
+        raf: 0,
+        pointer: { x: 0, y: 0, lastX: 0, lastY: 0, movedAt: 0, movement: 0 },
+        target: { x: 0, y: 0, spawnedAt: 0, dwellAt: 0, near: false },
+        samples: [],
+        testStart: 0,
+        lastFrame: 0,
+        score: 0,
+        overshoots: 0,
+        reactions: [],
+        turnStarted: false,
+        turnStartX: 0,
+        turnMovement: 0,
+        results: {
+          tracking: null,
+          aim: null,
+          turn: null
+        },
+        recommendation: null
+      };
+
+      const weaponModel = {
+        "M416": { v: 1.00, h: .92 },
+        "AUG": { v: 1.04, h: 1.04 },
+        "SCAR-L": { v: .96, h: .96 },
+        "QBZ": { v: .96, h: .94 },
+        "G36C": { v: 1.02, h: 1.00 },
+        "ACE32": { v: 1.13, h: 1.08 },
+        "Beryl M762": { v: 1.22, h: 1.18 },
+        "AKM": { v: 1.17, h: 1.10 }
+      };
+      const muzzleModel = {
+        "枪口制退器": { v: .90, h: .92, shake: .65, note: "降低纵向、横向与镜头抖动负担" },
+        "补偿器": { v: .84, h: .86, shake: .90, note: "偏向持续全自动稳定" },
+        "消焰器": { v: .94, h: .95, shake: .96, note: "中等后坐力收益" },
+        "消音器": { v: 1.00, h: 1.00, shake: 1.00, note: "模型不计入显著后坐力收益" },
+        "无枪口": { v: 1.00, h: 1.00, shake: 1.00, note: "完整承担枪械基础后坐力" }
+      };
+      const gripModel = {
+        "倾斜握把（2026）": { v: .88, h: .94, shake: .75, note: "纵向 + 横向 + 镜头抖动的均衡方案" },
+        "垂直握把": { v: .85, h: 1.00, shake: 1.00, note: "重点减轻持续向下拉枪负担" },
+        "半截式握把": { v: .92, h: .84, shake: 1.03, note: "更偏横向控制，适合左右摆动明显" },
+        "拇指握把": { v: .90, h: 1.00, shake: .95, note: "纵向控制与开镜速度兼顾" },
+        "轻型握把": { v: .95, h: 1.00, shake: .88, note: "偏首发与单点恢复，不是长扫首选" },
+        "无握把": { v: 1.00, h: 1.00, shake: 1.00, note: "完整承担枪械基础后坐力" }
+      };
+      const stockModel = {
+        "重型枪托": { v: .90, h: .90, note: "稳定优先，但开镜更慢" },
+        "战术枪托": { v: .95, h: .95, note: "均衡控制和操控速度" },
+        "无枪托": { v: 1.00, h: 1.00, note: "无额外稳定修正" }
+      };
+      const stanceModel = { "站姿": 1.00, "蹲姿": .86, "卧姿": .72 };
+
+      function showToast(message) {
+        $("toast").textContent = message;
+        $("toast").classList.add("show");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => $("toast").classList.remove("show"), 2200);
+      }
+
+      function setStep(step) {
+        state.activeStep = step;
+        document.querySelectorAll(".step-panel").forEach(panel => panel.hidden = panel.dataset.panel !== step);
+        document.querySelectorAll(".step-button").forEach(btn => btn.classList.toggle("active", btn.dataset.step === step));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        if (step === "loadout") updateLoadoutSummary();
+      }
+
+      document.querySelectorAll(".step-button").forEach(btn => btn.addEventListener("click", () => setStep(btn.dataset.step)));
+      document.querySelectorAll(".next-step").forEach(btn => btn.addEventListener("click", () => setStep(btn.dataset.next)));
+
+      $("universalScopes").addEventListener("change", (event) => {
+        $("scopeInputs").hidden = event.target.checked;
+        $("scopingField").hidden = !event.target.checked;
+      });
+      $("distance").addEventListener("input", () => {
+        $("distanceValue").textContent = $("distance").value;
+        updateLoadoutSummary();
+      });
+      document.querySelectorAll(".loadout-field").forEach(field => field.addEventListener("change", updateLoadoutSummary));
+      $("sprayIssue").addEventListener("change", updateLoadoutSummary);
+
+      function readLoadout(suffix) {
+        return {
+          weapon: $("weapon" + suffix).value,
+          scope: $("scope" + suffix).value,
+          muzzle: $("muzzle" + suffix).value,
+          grip: $("grip" + suffix).value,
+          stock: $("stock" + suffix).value,
+          stance: $("stance" + suffix).value
+        };
+      }
+
+      function loadoutDifficulty(loadout) {
+        const weapon = weaponModel[loadout.weapon];
+        const muzzle = muzzleModel[loadout.muzzle];
+        const grip = gripModel[loadout.grip];
+        const stock = stockModel[loadout.stock];
+        const stance = stanceModel[loadout.stance];
+        const distanceFactor = 1 + Math.max(0, numberValue("distance", 40) - 40) / 600;
+        return {
+          v: weapon.v * muzzle.v * grip.v * stock.v * stance * distanceFactor,
+          h: weapon.h * muzzle.h * grip.h * stock.h * stance * distanceFactor,
+          shake: muzzle.shake * grip.shake,
+          note: `${muzzle.note}；${grip.note}；${stock.note}`
+        };
+      }
+
+      function combinedLoadout() {
+        const a = loadoutDifficulty(readLoadout("A"));
+        const b = loadoutDifficulty(readLoadout("B"));
+        return {
+          v: a.v * .7 + b.v * .3,
+          h: a.h * .7 + b.h * .3,
+          shake: a.shake * .7 + b.shake * .3,
+          a, b
+        };
+      }
+
+      function updateLoadoutSummary() {
+        const combo = combinedLoadout();
+        const overall = combo.v * .5 + combo.h * .35 + combo.shake * .15;
+        $("loadoutDifficulty").textContent = round(overall, 2).toFixed(2);
+        const issue = $("sprayIssue").value;
+        let title = "稳健型配装基线";
+        let advice = `主配装：${readLoadout("A").weapon} / ${readLoadout("A").muzzle} / ${readLoadout("A").grip}。`;
+        if (issue === "horizontal") {
+          title = "横向稳定优先";
+          advice += " 当前问题更像横向随机后坐力与过度修正，建议优先比较半截式或倾斜握把。";
+        } else if (issue === "under" || issue === "fatigue") {
+          title = "持续下拉负担偏高";
+          advice += " 生成器会优先调整垂直倍率，而不是盲目提高全部灵敏度。";
+        } else if (issue === "first") {
+          title = "首段弹道优先";
+          advice += " 建议把轻型/拇指握把作为训练场对照，但长扫仍以整体弹着为准。";
+        } else {
+          advice += " 将通过测试区分纵向不足、横向抖动和操作波动。";
+        }
+        $("loadoutTitle").textContent = title;
+        $("loadoutText").textContent = advice;
+      }
+
+      function setTestStatus(name, text, done = false) {
+        const el = $("status-" + name);
+        el.textContent = text;
+        el.classList.toggle("done", done);
+      }
+
+      document.querySelectorAll(".start-test").forEach(btn => btn.addEventListener("click", () => prepareTest(btn.dataset.test)));
+
+      function resetArenaElements() {
+        cancelAnimationFrame(state.raf);
+        $("target").hidden = true;
+        $("crosshair").hidden = true;
+        $("sweepStart").hidden = true;
+        $("sweepFinish").hidden = true;
+        $("compass").hidden = true;
+        $("turnCalibration").hidden = true;
+        $("arenaCover").hidden = false;
+        $("arenaCover").innerHTML = '<div class="start-orb" id="startOrb"><div><b>把鼠标移到这里</b><span>触碰后自动倒计时，无需点击</span></div></div>';
+        state.testPhase = "ready";
+        state.turnStarted = false;
+        state.pointer.movement = 0;
+        state.samples = [];
+        state.reactions = [];
+        state.overshoots = 0;
+        state.score = 0;
+        $("hudScore").textContent = "0";
+        $("hudExtra").textContent = "--";
+      }
+
+      function prepareTest(type) {
+        state.activeTest = type;
+        resetArenaElements();
+        $("arenaShell").hidden = false;
+        $("arenaShell").scrollIntoView({ behavior: "smooth", block: "center" });
+        const titles = {
+          tracking: "01｜追踪与垂直补偿",
+          aim: "02｜快速定位",
+          turn: "03｜360° 舒适挥动"
+        };
+        $("arenaTitle").textContent = titles[type];
+        $("hudTime").textContent = type === "turn" ? "--" : "10.0";
+        $("hudExtraWrap").firstChild.textContent = type === "aim" ? "反应 " : type === "turn" ? "移动 " : "误差 ";
+        const start = $("startOrb");
+        start.onpointerenter = beginCountdown;
+        start.onmouseenter = beginCountdown;
+        start.onpointermove = beginCountdown;
+      }
+
+      function beginCountdown() {
+        if (state.testPhase !== "ready") return;
+        state.testPhase = "countdown";
+        const start = $("startOrb");
+        start.onpointerenter = null;
+        start.onmouseenter = null;
+        start.onpointermove = null;
+        let countdownStart = performance.now();
+        $("arenaCover").innerHTML = '<div class="countdown" id="countdownNumber">3</div>';
+        const tick = (now) => {
+          const elapsed = now - countdownStart;
+          const remaining = Math.max(0, 3 - elapsed / 1000);
+          const number = Math.max(1, Math.ceil(remaining));
+          const node = $("countdownNumber");
+          if (node) node.textContent = number;
+          if (remaining > 0) {
+            state.raf = requestAnimationFrame(tick);
+          } else {
+            startActiveTest();
+          }
+        };
+        state.raf = requestAnimationFrame(tick);
+      }
+
+      function startActiveTest() {
+        state.testPhase = "active";
+        $("arenaCover").hidden = true;
+        $("crosshair").hidden = false;
+        state.testStart = performance.now();
+        state.lastFrame = state.testStart;
+        state.pointer.movedAt = state.testStart;
+        if (state.activeTest === "turn") {
+          $("sweepStart").hidden = false;
+          $("sweepFinish").hidden = false;
+          $("compass").hidden = false;
+          $("turnCalibration").hidden = false;
+          $("crosshair").hidden = false;
+          $("sweepStart").classList.add("active");
+          state.raf = requestAnimationFrame(turnFrame);
+        } else {
+          $("target").hidden = false;
+          if (state.activeTest === "aim") spawnAimTarget(state.testStart);
+          state.raf = requestAnimationFrame(state.activeTest === "tracking" ? trackingFrame : aimFrame);
+        }
+      }
+
+      $("arena").addEventListener("pointermove", (event) => {
+        const rect = $("arena").getBoundingClientRect();
+        const x = clamp(event.clientX - rect.left, 0, rect.width);
+        const y = clamp(event.clientY - rect.top, 0, rect.height);
+        const dx = x - state.pointer.x;
+        const dy = y - state.pointer.y;
+        state.pointer.lastX = state.pointer.x;
+        state.pointer.lastY = state.pointer.y;
+        state.pointer.x = x;
+        state.pointer.y = y;
+        state.pointer.movement += Math.hypot(dx, dy);
+        if (Math.hypot(dx, dy) > .4) state.pointer.movedAt = performance.now();
+        $("crosshair").style.left = x + "px";
+        $("crosshair").style.top = y + "px";
+      });
+
+      function trackingFrame(now) {
+        if (state.testPhase !== "active") return;
+        const elapsed = now - state.testStart;
+        const duration = 10000;
+        const dt = Math.min(40, now - state.lastFrame);
+        state.lastFrame = now;
+        const rect = $("arena").getBoundingClientRect();
+        const t = elapsed / 1000;
+        const margin = 70;
+        const targetX = rect.width / 2 + Math.sin(t * 1.67) * (rect.width * .29) + Math.sin(t * .61) * (rect.width * .08);
+        const targetY = rect.height / 2 + Math.cos(t * 1.13) * (rect.height * .18) + Math.sin(t * 2.24) * (rect.height * .05);
+        state.target.x = clamp(targetX, margin, rect.width - margin);
+        state.target.y = clamp(targetY, margin, rect.height - margin);
+        $("target").style.left = state.target.x + "px";
+        $("target").style.top = state.target.y + "px";
+
+        const recoilPhase = elapsed > 5000;
+        const recoilOffset = recoilPhase ? Math.min(78, (elapsed - 5000) * .013) + Math.sin(t * 10) * 4 : 0;
+        const displayX = state.pointer.x;
+        const displayY = state.pointer.y - recoilOffset;
+        $("crosshair").style.left = displayX + "px";
+        $("crosshair").style.top = displayY + "px";
+        const dx = displayX - state.target.x;
+        const dy = displayY - state.target.y;
+        const error = Math.hypot(dx, dy);
+        const activelyMoved = now - state.pointer.movedAt < 170;
+        const onTarget = error < 28 && activelyMoved;
+        state.samples.push({ error, dx, dy, recoilPhase, onTarget, dt });
+        if (onTarget) state.score += dt;
+        $("hudScore").textContent = Math.round(state.score / 100);
+        $("hudExtra").textContent = Math.round(error) + "px";
+        $("hudTime").textContent = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+        if (elapsed < duration) state.raf = requestAnimationFrame(trackingFrame);
+        else finishTracking();
+      }
+
+      function finishTracking() {
+        state.testPhase = "finished";
+        const totalTime = state.samples.reduce((sum, s) => sum + s.dt, 0) || 1;
+        const hoverTime = state.samples.reduce((sum, s) => sum + (s.onTarget ? s.dt : 0), 0);
+        const meanError = state.samples.reduce((sum, s) => sum + s.error, 0) / Math.max(1, state.samples.length);
+        const recoil = state.samples.filter(s => s.recoilPhase);
+        const verticalBias = recoil.reduce((sum, s) => sum + s.dy, 0) / Math.max(1, recoil.length);
+        const horizontalJitter = Math.sqrt(recoil.reduce((sum, s) => sum + s.dx * s.dx, 0) / Math.max(1, recoil.length));
+        state.results.tracking = {
+          accuracy: round(hoverTime / totalTime * 100, 1),
+          meanError: round(meanError, 1),
+          verticalBias: round(verticalBias, 1),
+          horizontalJitter: round(horizontalJitter, 1)
+        };
+        setTestStatus("tracking", `${state.results.tracking.accuracy}% 精准度`, true);
+        finishOverlay("追踪测试完成", `有效跟随 ${state.results.tracking.accuracy}% · 平均误差 ${state.results.tracking.meanError}px`);
+      }
+
+      function spawnAimTarget(now) {
+        const rect = $("arena").getBoundingClientRect();
+        const margin = 70;
+        state.target.x = margin + Math.random() * Math.max(1, rect.width - margin * 2);
+        state.target.y = margin + Math.random() * Math.max(1, rect.height - margin * 2);
+        state.target.spawnedAt = now;
+        state.target.dwellAt = 0;
+        state.target.near = false;
+        $("target").style.left = state.target.x + "px";
+        $("target").style.top = state.target.y + "px";
+      }
+
+      function aimFrame(now) {
+        if (state.testPhase !== "active") return;
+        const elapsed = now - state.testStart;
+        const duration = 10000;
+        const dx = state.pointer.x - state.target.x;
+        const dy = state.pointer.y - state.target.y;
+        const distance = Math.hypot(dx, dy);
+        const activelyMoved = now - state.pointer.movedAt < 170;
+        if (distance < 48 && !state.target.near) state.target.near = true;
+        if (state.target.near && distance > 70) {
+          state.overshoots += 1;
+          state.target.near = false;
+        }
+        if (distance < 24 && activelyMoved) {
+          if (!state.target.dwellAt) state.target.dwellAt = now;
+          if (now - state.target.dwellAt >= 50) {
+            state.score += 1;
+            state.reactions.push(now - state.target.spawnedAt);
+            spawnAimTarget(now);
+          }
+        } else {
+          state.target.dwellAt = 0;
+        }
+        $("hudScore").textContent = state.score;
+        $("hudExtra").textContent = state.reactions.length ? Math.round(median(state.reactions)) + "ms" : "--";
+        $("hudTime").textContent = Math.max(0, (duration - elapsed) / 1000).toFixed(1);
+        if (elapsed < duration) state.raf = requestAnimationFrame(aimFrame);
+        else finishAim();
+      }
+
+      function finishAim() {
+        state.testPhase = "finished";
+        state.results.aim = {
+          hits: state.score,
+          medianReaction: Math.round(median(state.reactions)),
+          overshoots: state.overshoots
+        };
+        setTestStatus("aim", `${state.score} 命中`, true);
+        finishOverlay("定位测试完成", `${state.score} 次命中 · 中位反应 ${state.results.aim.medianReaction || "--"}ms · 过冲 ${state.overshoots}`);
+      }
+
+      function turnFrame(now) {
+        if (state.testPhase !== "active") return;
+        const rect = $("arena").getBoundingClientRect();
+        const x = state.pointer.x;
+        const startZone = rect.width * .05 + 43;
+        const finishZone = rect.width * .95 - 43;
+        if (!state.turnStarted && x <= startZone + 44) {
+          state.turnStarted = true;
+          state.turnStartX = x;
+          state.turnMovement = 0;
+          state.pointer.movement = 0;
+          $("sweepStart").classList.remove("active");
+          $("sweepFinish").classList.add("active");
+        }
+        if (state.turnStarted) {
+          state.turnMovement = state.pointer.movement;
+          const progress = clamp((x - startZone) / Math.max(1, finishZone - startZone), 0, 1);
+          $("compassLine").style.transform = `rotate(${progress * 360}deg)`;
+          $("hudScore").textContent = Math.round(progress * 100) + "%";
+          $("hudExtra").textContent = Math.round(state.turnMovement) + "u";
+          if (x >= finishZone - 44) {
+            finishTurn(now);
+            return;
+          }
+        }
+        state.raf = requestAnimationFrame(turnFrame);
+      }
+
+      function finishTurn(now) {
+        state.testPhase = "finished";
+        const dpi = numberValue("dpi", 800);
+        const browserEstimate = clamp(state.turnMovement / dpi * 2.54 * 2.8, 12, 90);
+        const elapsed = now - state.testStart;
+        state.results.turn = {
+          browserEstimate: round(browserEstimate, 1),
+          movementUnits: Math.round(state.turnMovement),
+          duration: Math.round(elapsed)
+        };
+        setTestStatus("turn", `估算 ${state.results.turn.browserEstimate}cm`, true);
+        finishOverlay("360° 舒适挥动完成", `浏览器相对估算 ${state.results.turn.browserEstimate}cm · 建议用训练场实测值覆盖`);
+      }
+
+      function finishOverlay(title, summary) {
+        $("target").hidden = true;
+        $("crosshair").hidden = true;
+        $("sweepStart").hidden = true;
+        $("sweepFinish").hidden = true;
+        $("compass").hidden = true;
+        $("arenaCover").hidden = false;
+        $("arenaCover").innerHTML = `<div class="finish-card"><strong>${title}</strong><p>${summary}</p><button class="btn primary" id="closeArena">返回测试列表</button></div>`;
+        $("closeArena").addEventListener("click", () => {
+          $("arenaShell").hidden = true;
+          document.querySelector(".test-grid").scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+      }
+
+      $("resetTests").addEventListener("click", () => {
+        cancelAnimationFrame(state.raf);
+        state.results = { tracking: null, aim: null, turn: null };
+        ["tracking","aim","turn"].forEach(name => setTestStatus(name, "未完成", false));
+        $("arenaShell").hidden = true;
+        showToast("测试结果已重置");
+      });
+
+      function pubgSensFromCm(cm, dpi) {
+        const yaw = 360 * 2.54 / (dpi * cm);
+        const sens = 50 + 15 * Math.log2(yaw / .05);
+        return Math.round(clamp(sens, 1, 100));
+      }
+
+      function cmFromPubgSens(sens, dpi) {
+        const yaw = .05 * Math.pow(2, (sens - 50) / 15);
+        return 360 * 2.54 / (dpi * yaw);
+      }
+
+      function readCurrentSettings() {
+        return {
+          general: numberValue("currentGeneral", 38),
+          vertical: numberValue("currentVertical", 1),
+          aim: numberValue("currentAim", 37),
+          ads: numberValue("currentAds", 37),
+          scoping: numberValue("currentScoping", 36),
+          scope2: numberValue("scope2", 36),
+          scope3: numberValue("scope3", 36),
+          scope4: numberValue("scope4", 36),
+          scope6: numberValue("scope6", 36),
+          scope8: numberValue("scope8", 36),
+          scope15: numberValue("scope15", 36)
+        };
+      }
+
+      function generateRecommendation() {
+        const dpi = numberValue("dpi", 800);
+        const pad = numberValue("padWidth", 45);
+        const current = readCurrentSettings();
+        const tracking = state.results.tracking || { accuracy: 45, meanError: 46, verticalBias: -6, horizontalJitter: 38 };
+        const aim = state.results.aim || { hits: 6, medianReaction: 650, overshoots: 2 };
+        const turn = state.results.turn || { browserEstimate: cmFromPubgSens(current.general, dpi) };
+        const actualCm = numberValue("actualCm", 0);
+        const style = $("aimStyle").value;
+        const styleTarget = style === "arm" ? 48 : style === "wrist" ? 29 : 39;
+        const padTarget = clamp(pad * .92, 25, 55);
+        let targetCm = actualCm || (turn.browserEstimate * .35 + styleTarget * .45 + padTarget * .20);
+        if (aim.overshoots >= 3 || tracking.horizontalJitter > 45) targetCm += 2.5;
+        if (aim.hits >= 10 && aim.overshoots <= 1 && tracking.accuracy > 62) targetCm -= 1.5;
+        targetCm = round(clamp(targetCm, 20, Math.min(65, pad * 1.25)), 1);
+
+        let general = pubgSensFromCm(targetCm, dpi);
+        general = Math.round(clamp(current.general * .35 + general * .65, current.general - 6, current.general + 6));
+        const precisionPenalty = (aim.overshoots >= 3 ? 2 : 0) + (tracking.horizontalJitter > 45 ? 1 : 0);
+        const speedBoost = aim.hits >= 10 && aim.medianReaction < 520 ? 1 : 0;
+        const aimSens = Math.round(clamp(general - 1 - precisionPenalty + speedBoost, 1, 100));
+        const ads = Math.round(clamp(aimSens - (tracking.meanError > 55 ? 1 : 0), 1, 100));
+
+        const combo = combinedLoadout();
+        const issue = $("sprayIssue").value;
+        let verticalAdjust = (combo.v - .78) * .16;
+        if (tracking.verticalBias < -8) verticalAdjust += .05;
+        if (tracking.verticalBias > 8) verticalAdjust -= .05;
+        if (issue === "under" || issue === "fatigue") verticalAdjust += .05;
+        if (issue === "over") verticalAdjust -= .05;
+        if (issue === "horizontal") verticalAdjust += .01;
+        const vertical = round(clamp(current.vertical * .35 + (1 + verticalAdjust) * .65, .70, 1.50), 2);
+
+        const scopeBase = ads;
+        const distance = numberValue("distance", 40);
+        const longRangePenalty = distance >= 70 ? 1 : 0;
+        const scopeValues = {
+          scope2: clamp(scopeBase, 1, 100),
+          scope3: clamp(scopeBase - longRangePenalty, 1, 100),
+          scope4: clamp(scopeBase - 1 - longRangePenalty, 1, 100),
+          scope6: clamp(scopeBase - 2 - longRangePenalty, 1, 100),
+          scope8: clamp(scopeBase - 3 - longRangePenalty, 1, 100),
+          scope15: clamp(scopeBase - 5 - longRangePenalty, 1, 100)
+        };
+        const completed = [state.results.tracking, state.results.aim, state.results.turn].filter(Boolean).length;
+        const confidence = clamp(48 + completed * 13 + (actualCm ? 8 : 0), 48, 95);
+        state.recommendation = {
+          targetCm, general, aim: aimSens, ads, vertical, scoping: Math.round(scopeBase - 1),
+          ...scopeValues, confidence, current, combo
+        };
+        renderRecommendation();
+        setStep("results");
+      }
+
+      $("generateResults").addEventListener("click", generateRecommendation);
+
+      function deltaText(current, next, digits = 0) {
+        const delta = round(next - current, digits);
+        if (Math.abs(delta) < Math.pow(10, -digits) / 2) return { text: "保持", cls: "" };
+        return { text: (delta > 0 ? "+" : "") + delta.toFixed(digits), cls: delta > 0 ? "up" : "down" };
+      }
+
+      function renderRecommendation() {
+        const r = state.recommendation;
+        if (!r) return;
+        $("resultCm").textContent = r.targetCm;
+        $("confidenceValue").textContent = r.confidence + "%";
+        $("resultHeadline").textContent = r.confidence >= 80
+          ? "三项测试与训练场距离共同参与，适合作为正式 A/B 起点。"
+          : "当前仍有缺失测试，建议补齐后重新生成以提高可信度。";
+        const universal = $("universalScopes").checked;
+        const rows = [
+          ["常规灵敏度", r.current.general, r.general, 0, "360° 舒适距离、鼠标垫和发力方式"],
+          ["垂直灵敏度倍率", r.current.vertical, r.vertical, 2, "垂直补偿偏差、主战配装和压枪问题"],
+          ["瞄准灵敏度", r.current.aim, r.aim, 0, "定位速度、过冲和追踪稳定性"],
+          ["ADS 灵敏度", r.current.ads, r.ads, 0, "1x 精度、横向抖动与中心误差"]
+        ];
+        if (universal) {
+          rows.push(["开镜模式灵敏度", r.current.scoping, r.scoping, 0, "统一倍镜模式的稳健基线"]);
+        } else {
+          rows.push(
+            ["2x 倍镜", r.current.scope2, r.scope2, 0, "近中距离持续跟枪"],
+            ["3x 倍镜", r.current.scope3, r.scope3, 0, "主流 AR 压枪与距离权重"],
+            ["4x 倍镜", r.current.scope4, r.scope4, 0, "中距离微调与过冲控制"],
+            ["6x 倍镜", r.current.scope6, r.scope6, 0, "缩放压枪与远距稳定"],
+            ["8x 倍镜", r.current.scope8, r.scope8, 0, "远距单点微调"],
+            ["15x 倍镜", r.current.scope15, r.scope15, 0, "极远距离小幅修正"]
+          );
+        }
+        $("resultRows").innerHTML = rows.map(([label,current,next,digits,reason]) => {
+          const delta = deltaText(Number(current), Number(next), digits);
+          return `<tr><td><b>${label}</b></td><td>${Number(current).toFixed(digits)}</td><td class="result-value">${Number(next).toFixed(digits)}</td><td class="delta ${delta.cls}">${delta.text}</td><td class="reason">${reason}</td></tr>`;
+        }).join("");
+
+        const tracking = state.results.tracking;
+        const aim = state.results.aim;
+        const issue = $("sprayIssue").value;
+        const diagnoses = [];
+        if (tracking) {
+          diagnoses.push({
+            cls: tracking.verticalBias < -8 ? "warn" : tracking.verticalBias > 8 ? "alert" : "good",
+            title: "纵向补偿",
+            text: tracking.verticalBias < -8 ? "模拟后坐力阶段偏向压不住，垂直倍率将小幅上调。" : tracking.verticalBias > 8 ? "存在下压过度，垂直倍率将小幅下调。" : "纵向补偿接近中性，优先保持肌肉记忆。"
+          });
+          diagnoses.push({
+            cls: tracking.horizontalJitter > 45 ? "alert" : "good",
+            title: "横向稳定",
+            text: tracking.horizontalJitter > 45 ? "横向修正偏多，优先降低 ADS/常用倍镜，并比较半截式或倾斜握把。" : "横向抖动在可控区间，不建议用大幅降敏换取表面稳定。"
+          });
+        } else {
+          diagnoses.push({ cls: "warn", title: "追踪数据缺失", text: "当前使用保守默认值。完成追踪测试后可区分压不住和下压过度。" });
+        }
+        if (aim) {
+          diagnoses.push({
+            cls: aim.overshoots >= 3 ? "warn" : "good",
+            title: "定位与过冲",
+            text: aim.overshoots >= 3 ? `记录到 ${aim.overshoots} 次过冲，瞄准与 ADS 会保守降低。` : `命中 ${aim.hits} 次且过冲较少，可保持当前响应速度。`
+          });
+        } else {
+          diagnoses.push({ cls: "warn", title: "定位数据缺失", text: "当前不能可靠判断灵敏度过快还是过慢。" });
+        }
+        if (issue === "horizontal") diagnoses.push({ cls: "warn", title: "配件建议", text: "把半截式握把或倾斜握把加入 A/B；横向随机后坐力无法靠提高垂直倍率消除。" });
+        $("diagnosisGrid").innerHTML = diagnoses.slice(0,3).map(d => `<div class="diagnosis ${d.cls}"><b>${d.title}</b><p>${d.text}</p></div>`).join("");
+
+        const compareStep = r.vertical >= 1 ? .03 : .02;
+        const abA = round(clamp(r.vertical - compareStep, .5, 2), 2);
+        const abB = round(clamp(r.vertical + compareStep, .5, 2), 2);
+        $("abA").textContent = `垂直倍率 ${abA.toFixed(2)}`;
+        $("abB").textContent = `垂直倍率 ${abB.toFixed(2)}`;
+        $("abAText").textContent = `${readLoadout("A").weapon} · ${readLoadout("A").scope} · ${$("distance").value} 米 · 3 组 30 发`;
+        $("abBText").textContent = "其他设置完全相同，只比较持续下拉和左右稳定";
+      }
+
+      document.querySelectorAll(".ab-feedback").forEach(btn => btn.addEventListener("click", () => {
+        if (!state.recommendation) return;
+        if (btn.dataset.feedback === "under") {
+          state.recommendation.vertical = round(clamp(state.recommendation.vertical + .03, .5, 2), 2);
+          showToast("下一轮垂直倍率已上调 0.03");
+        } else if (btn.dataset.feedback === "over") {
+          state.recommendation.vertical = round(clamp(state.recommendation.vertical - .03, .5, 2), 2);
+          showToast("下一轮垂直倍率已下调 0.03");
+        } else {
+          state.recommendation.ads = clamp(state.recommendation.ads - 1, 1, 100);
+          ["scope2","scope3","scope4"].forEach(key => state.recommendation[key] = clamp(state.recommendation[key] - 1, 1, 100));
+          showToast("下一轮 ADS 与近中倍镜已下调 1");
+        }
+        renderRecommendation();
+      }));
+
+      $("saveProfile").addEventListener("click", () => {
+        if (!state.recommendation) return;
+        const history = JSON.parse(localStorage.getItem("pubgSensLabHistory") || "[]");
+        history.unshift({ savedAt: new Date().toISOString(), recommendation: state.recommendation, tests: state.results });
+        localStorage.setItem("pubgSensLabHistory", JSON.stringify(history.slice(0, 20)));
+        showToast("本次方案已保存到本机");
+      });
+
+      $("exportJson").addEventListener("click", () => {
+        if (!state.recommendation) return showToast("请先生成方案");
+        const data = {
+          exportedAt: new Date().toISOString(),
+          profile: {
+            dpi: numberValue("dpi", 800),
+            polling: $("polling").value,
+            padWidthCm: numberValue("padWidth", 45),
+            fov: numberValue("fov", 103),
+            aimStyle: $("aimStyle").value
+          },
+          loadouts: [readLoadout("A"), readLoadout("B")],
+          tests: state.results,
+          recommendation: state.recommendation
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "PUBG-SENS-LAB-" + new Date().toISOString().slice(0,10) + ".json";
+        link.click();
+        URL.revokeObjectURL(url);
+        showToast("测试记录已导出");
+      });
+
+      updateLoadoutSummary();
+      const saved = localStorage.getItem("pubgSensLabHistory");
+      if (saved) {
+        try {
+          const latest = JSON.parse(saved)[0];
+          if (latest?.recommendation) {
+            state.recommendation = latest.recommendation;
+          }
+        } catch (_) {}
+      }
+    })();
+  </script>
+</body>
+</html>
